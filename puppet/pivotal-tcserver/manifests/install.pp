@@ -16,14 +16,70 @@
 
 class tcserver::install(
   $version = 'latest',
+  $provider = 'pivotal',
 ) {
 
-  if defined('pivotal_repo') {
-    package {'pivotal-tc-server-standard':
-      ensure    => $version,
-      require   => Exec['pivotal-eula-acceptance'],
+
+    case $provider {
+      'pivotal': {
+        if defined('pivotal_repo') {
+          package {'pivotal-tc-server-standard':
+            ensure  => $version,
+            require => Exec['pivotal-eula-acceptance'],
+          }
+        } else {
+          fail 'pivotal_repo module not included'
+        }
+      }
+    'dpkg': {
+      $package_version = "pivotal-tc-server-standard-${version}"
+      $file_ext = 'deb'
+      package {'pivotal-tc-server-standard':
+        ensure   => present,
+        provider => 'dpkg',
+        source   => "/tmp/${package_version}.noarch.${file_ext}",
+        require  => File["pivotal_tcserver_${file_ext}"],
+      }
+      file {"pivotal_tcserver_${file_ext}":
+        ensure => file,
+        source => "puppet:///modules/tcserver/${package_version}.noarch.${file_ext}",
+        path   => "/tmp/${package_version}.noarch.${file_ext}",
+      }
     }
-  } else {
-    fail 'pivotal_repo module not included'
+    'rpm': {
+      $package_version = "pivotal-tc-server-standard-${version}"
+      $file_ext = 'rpm'
+      package {'pivotal-tc-server-standard':
+        ensure   => present,
+        provider => 'rpm',
+        source   => "/tmp/${package_version}.noarch.${file_ext}",
+        require  => File["pivotal_tcserver_${file_ext}"],
+      }
+      file {"pivotal_tcserver_${file_ext}":
+        ensure => file,
+        source => "puppet:///modules/tcserver/${package_version}.noarch.${file_ext}",
+        path   => "/tmp/${package_version}.noarch.${file_ext}",
+      }
+    }
+    'local_repo': {
+      case $::osfamily {
+        'suse': {
+          $package_provider = 'zypper'
+        }
+        'redhat': {
+          $package_provider = 'yum'
+        }
+        'debian': {
+          $package_provider = 'apt'
+        }
+        default: {
+          fail("tcserver::install::provider::local_repo is not compatable with ${::osfamily}.")
+        }
+      }
+      package {'pivotal-tc-server-standard':
+        ensure   => $version,
+        provider => $package_provider,
+      }
+    }
   }
 }

@@ -109,43 +109,43 @@ define tcserver::instance (
     }
 
     file { "${cwd}/${name}":
-      ensure      => directory,
-      owner       => $tcserver_user,
-      group       => $tcserver_group,
-      recurse     => true,
-      ignore      => "${cwd}/${name}/${apps_dir}",
-      require     => Tcruntime_instance[$name]
+      ensure  => directory,
+      owner   => $tcserver_user,
+      group   => $tcserver_group,
+      recurse => true,
+      ignore  => "${cwd}/${name}/${apps_dir}",
+      require => Tcruntime_instance[$name]
     }
 
     file { "/etc/init.d/tcserver-instance-${name}":
-      ensure      => link,
-      target      => "${cwd}/${name}/bin/init.d.sh",
+      ensure => link,
+      target => "${cwd}/${name}/bin/init.d.sh",
     }
 
     tcserver::service {$name:
-      ensure      => $ensure,
-      name        => $name,
-      cwd         => $cwd,
+      ensure => $ensure,
+      name   => $name,
+      cwd    => $cwd,
     }
 
     if $deploy_apps {
       file { "${cwd}/${name}/${apps_dir}":
-        recurse   => true,
-        source    => $apps_source
+        recurse => true,
+        source  => $apps_source
       }
     }
   } else {
     tcserver::service {$name:
-      ensure      => absent,
-      name        => $name,
-      cwd         => $cwd,
+      ensure => absent,
+      name   => $name,
+      cwd    => $cwd,
     }->
     file { "${cwd}/${name}":
-      ensure      => absent,
-      force       => true
+      ensure => absent,
+      force  => true
     }->
     file { "/etc/init.d/tcserver-instance-${name}":
-      ensure      => absent,
+      ensure => absent,
     }
   }
 }

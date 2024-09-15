@@ -24,14 +24,14 @@ define tcserver::service (
 ) {
   if $ensure == absent {
     service { "tcserver-instance-${name}":
-      ensure    => stopped,
-      status    => "ps -p `cat ${cwd}/${name}/logs/tcserver.pid` > /dev/null 2>&1",
+      ensure => stopped,
+      status => "ps -p `cat ${cwd}/${name}/logs/tcserver.pid` > /dev/null 2>&1",
     }
   } else {
     service { "tcserver-instance-${name}":
-      ensure    => $ensure,
-      status    => "ps -p `cat ${cwd}/${name}/logs/tcserver.pid` > /dev/null 2>&1",
-      require   => File["${cwd}/${name}"]
+      ensure  => $ensure,
+      status  => "ps -p `cat ${cwd}/${name}/logs/tcserver.pid` > /dev/null 2>&1",
+      require => File["${cwd}/${name}"]
     }
   }
 }
