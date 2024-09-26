@@ -71,7 +71,9 @@ class pivotal_repo (
           /^12.04/ => 'pivotal-app-suite-repo-precise'
         }
         class { 'apt':
-          always_apt_update    => true,
+          update    => {
+            frequency => 'always',
+          },
         } ->
         apt::key {'pivotal-app-suite':
           key        => '7C4B3B36',
